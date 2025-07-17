@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>查詢成績</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8QpT5NYVRVsfIOlnVnUnOaFbjEbYid7U",
+      authDomain: "project-4290386069755893641.firebaseapp.com",
+      projectId: "project-4290386069755893641",
+      storageBucket: "project-4290386069755893641.appspot.com",
+      messagingSenderId: "374189195846",
+      appId: "1:374189195846:web:17eb1d6d6521df7d754047",
+      measurementId: "G-FTZ124D7KL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function checkScore() {
+      const code = document.getElementById("code").value;
+      const docRef = doc(db, "users", code);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById("result").innerText = `
+          姓名: ${data.name || "未知"}
+          單鈴: ${data.single || "暫無"}
+          雙鈴: ${data.double || "暫無"}
+        `;
+      } else {
+        document.getElementById("result").innerText = "查無資料";
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>查詢成績</h1>
+  <input type="text" id="code" placeholder="請輸入代號" />
+  <button onclick="checkScore()">查詢</button>
+  <pre id="result"></pre>
+</body>
+</html>
