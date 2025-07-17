@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>管理員 - 成績修改</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+  <h2>管理員 - 修改成績</h2>
+
+  <input type="text" id="emailInput" placeholder="輸入使用者 Email">
+  <button onclick="loadUser()">載入使用者資料</button>
+
+  <div id="userForm" style="display:none; margin-top: 20px;">
+    <p>名稱：<span id="username"></span></p>
+    <label>單鈴：<input type="text" id="single"></label><br>
+    <label>雙鈴：<input type="text" id="double"></label><br>
+    <label>三鈴：<input type="text" id="triple"></label><br>
+    <label>四鈴：<input type="text" id="quad"></label><br>
+    <label>直立鈴：<input type="text" id="vertical"></label><br>
+    <button onclick="saveUser()">儲存修改</button>
+  </div>
+
+  <script>
+    // ✅ Firebase 設定：請換成你自己的
+    const firebaseConfig = {
+      apiKey: "你的 apiKey",
+      authDomain: "你的 authDomain",
+      databaseURL: "你的 databaseURL",
+      projectId: "你的 projectId",
+      storageBucket: "你的 storageBucket",
+      messagingSenderId: "你的 messagingSenderId",
+      appId: "你的 appId"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentKey = null;
+
+    function loadUser() {
+      const email = document.getElementById("emailInput").value;
+      if (!email) return alert("請輸入 Email");
+
+      db.ref("users").once("value", snapshot => {
+        let found = false;
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.email === email) {
+            currentKey = child.key;
+            document.getElementById("username").textContent = data.name || "未命名";
+            document.getElementById("single").value = data.單鈴 || "";
+            document.getElementById("double").value = data.雙鈴 || "";
+            document.getElementById("triple").value = data.三鈴 || "";
+            document.getElementById("quad").value = data.四鈴 || "";
+            document.getElementById("vertical").value = data.直立鈴 || "";
+            document.getElementById("userForm").style.display = "block";
+            found = true;
+          }
+        });
+        if (!found) alert("找不到這個 Email 的使用者");
+      });
+    }
+
+    function saveUser() {
+      if (!currentKey) return alert("請先載入使用者");
+
+      const updates = {
+        單鈴: document.getElementById("single").value,
+        雙鈴: document.getElementById("double").value,
+        三鈴: document.getElementById("triple").value,
+        四鈴: document.getElementById("quad").value,
+        直立鈴: document.getElementById("vertical").value,
+      };
+
+      db.ref("users/" + currentKey).update(updates, (error) => {
+        if (error) {
+          alert("儲存失敗：" + error.message);
+        } else {
+          alert("儲存成功！");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
