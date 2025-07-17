@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>管理員系統</title>
+</head>
+<body>
+  <h1>管理員後台：使用者資料</h1>
+  <div id="userTable"></div>
+  <button onclick="saveAll()">儲存所有更動</button>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    // ✅ 請填入你的 Firebase 設定
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const fields = ["name", "single", "double", "triple", "quadruple", "vertical"];
+
+    // 顯示所有使用者資料
+    db.ref("users").once("value").then(snapshot => {
+      const data = snapshot.val();
+      let html = "<table border='1'><tr><th>信箱</th><th>名字</th><th>單鈴</th><th>雙鈴</th><th>三鈴</th><th>四鈴</th><th>直立鈴</th></tr>";
+
+      for (const uid in data) {
+        const user = data[uid];
+        html += `<tr data-id="${uid}">
+          <td>${user.email || ''}</td>
+          ${fields.map(f => `<td><input value="${user[f] || ''}" data-field="${f}"></td>`).join("")}
+        </tr>`;
+      }
+
+      html += "</table>";
+      document.getElementById("userTable").innerHTML = html;
+    });
+
+    // 儲存所有更動
+    function saveAll() {
+      const rows = document.querySelectorAll("tr[data-id]");
+      rows.forEach(row => {
+        const uid = row.getAttribute("data-id");
+        const updates = {};
+        row.querySelectorAll("input").forEach(input => {
+          const field = input.getAttribute("data-field");
+          updates[field] = input.value;
+        });
+        db.ref("users/" + uid).update(updates);
+      });
+      alert("資料已儲存！");
+    }
+  </script>
+</body>
+</html>
